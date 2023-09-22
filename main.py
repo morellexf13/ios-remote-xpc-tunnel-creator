@@ -78,20 +78,19 @@ def main():
     connected_devices = []
     if list_remote_devices:
         devices = get_remote_devices()
-        logging.info(f"{remote_xpc_log} {devices}")
         for device in devices:
             connected_devices.append(device.udid)
-
-        with open(log_destination_path, "w") as log_file:
-            log_file.write(json.dumps(connected_devices))
-            log_file.close()
+        
+        connected_devices = json.dumps(connected_devices)
+        print(connected_devices)
+        return
 
     if not log_destination_path:
         logging.info(f"{remote_xpc_log} No log destination path found!, use --log_destination_path arg")
         return
 
     if not device_udid:
-        logging.info(f"{remote_xpc_log} No device found, use --udid arg")
+        logging.info(f"{remote_xpc_log} Tunnel couldn't be created, use --udid arg to specify a device")
     else:
         logging.info(f"{remote_xpc_log} Creating tunnel with device: {device_udid}...")
         start_remote_xpc_tunnel(udid=device_udid, log_destination=log_destination_path)
