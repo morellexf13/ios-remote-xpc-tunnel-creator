@@ -18,9 +18,7 @@ remote_xpc_log = "Remote XPC Tunnel: "
 
 def get_remote_devices():
     devices = get_device_list()
-    logging.info(f"{remote_xpc_log} {devices}")
     if not devices:
-        logging.info(f"{remote_xpc_log} No devices were found")
         raise NoDeviceConnectedError()
     return devices
 
@@ -58,7 +56,7 @@ async def start_quic_tunnel(service_provider: RemoteServiceDiscoveryService, log
                     log_file.write(json.dumps({
                         "address": tunnel_result.address,
                         "port": tunnel_result.port
-                    }))
+                    })) 
             while True:
                 # wait user input while the asyncio tasks execute
                 await asyncio.sleep(.5)
@@ -66,9 +64,9 @@ async def start_quic_tunnel(service_provider: RemoteServiceDiscoveryService, log
 
 def main():
 
-    # if os.geteuid() != 0:
-    #     logging.info(f"{remote_xpc_log} This script requires root privileges.")
-    #     return
+    if os.geteuid() != 0:
+        logging.info(f"{remote_xpc_log} This script requires root privileges.")
+        return
 
     logging.info(f"{remote_xpc_log} Running with root privileges")
 
@@ -80,6 +78,7 @@ def main():
     connected_devices = []
     if list_remote_devices:
         devices = get_remote_devices()
+        logging.info(f"{remote_xpc_log} {devices}")
         for device in devices:
             connected_devices.append(device.udid)
 
@@ -88,7 +87,8 @@ def main():
             log_file.close()
 
     if not log_destination_path:
-        logging.info(f"{remote_xpc_log} No log destination path found, rsd will be just logged")
+        logging.info(f"{remote_xpc_log} No log destination path found!, use --log_destination_path arg")
+        return
 
     if not device_udid:
         logging.info(f"{remote_xpc_log} No device found, use --udid arg")

@@ -35,7 +35,7 @@ Python 3
 
 Install requirements
 
-```
+```bash
 pip3 install -r requirements.txt
 ```
 
@@ -45,12 +45,42 @@ pip3 install -r requirements.txt
 
 2- Give root permissions (needed) [pymobiledevice3 issues#562](https://github.com/doronz88/pymobiledevice3/issues/562#issuecomment-1724226316)
 
-```
+```bash
 cd dist/remote-xpc-tunnel
 sudo chown root ./remote-xpc-tunnel
 sudo chmod u+s ./remote-xpc-tunnel
 ```
 
+or create remote-xpc-tunnel.scpt inside `dist/remote-xpc-tunnel` with the following content:
+
+```applescript
+do shell script "./remote-xpc-tunnel --list_remote_devices true --log_destination_path /Users/juan/Library/Apptim/remote-xpc-tunnel" with prompt "Trust Apptim iOS connection?" with administrator privileges
+```
+
+and then do:
+
+```bash
+osascript ./remote-xpc-tunnel.scpt
+```
+
+### 🚀 API
+
+```bash
+--udid # device serial
+--log_destination_path # location to write output files
+--list_remote_devices # just obtain connected devices, do not create tunnels
+```
+
 ### 🏃🏽‍♂️ Run
 
-```sudo ./remote-xpc-tunnel --udid ABCDEF12-34567890ABCDEF12```
+Create tunnel
+
+```bash
+sudo ./remote-xpc-tunnel --udid ABCDEF12-34567890ABCDEF12 --log_destination_path /Users/juan/Library/Apptim/remote-xpc-tunnel
+```
+
+List remote devices
+
+```bash
+sudo ./remote-xpc-tunnel --list_remote_devices true --log_destination_path /Users/juan/Library/Apptim/remote-xpc-tunnel
+```
