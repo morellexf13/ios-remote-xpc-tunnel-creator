@@ -10,7 +10,7 @@
   </h1>
   <sup>
     <br />
-   Create a rooted binary to communicate a computer with an iOS 17 device to use developer services.</em>
+     An iOS >=17 RemoteXPC tunnel creator</em>
     <br />
     <br />
 
