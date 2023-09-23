@@ -43,44 +43,41 @@ pip3 install -r requirements.txt
 
 1- Create binary with ```pyinstaller main.py --name remote-xpc-tunnel```
 
-2- Give root permissions (needed) [pymobiledevice3 issues#562](https://github.com/doronz88/pymobiledevice3/issues/562#issuecomment-1724226316)
+### 🚀 API
+
+```bash
+--udid # device serial
+--log-destination-path # location to write output files
+--list-remote-devices # just obtain connected devices, do not create tunnels
+```
+
+### 🏃🏽‍♂️ Run
+
+List remote devices
+
+Give root permissions (needed) [pymobiledevice3 issues#562](https://github.com/doronz88/pymobiledevice3/issues/562#issuecomment-1724226316)
 
 ```bash
 cd dist/remote-xpc-tunnel
 sudo chown root ./remote-xpc-tunnel
 sudo chmod u+s ./remote-xpc-tunnel
 ```
-
-or create remote-xpc-tunnel.scpt inside `dist/remote-xpc-tunnel` with the following content:
-
-```applescript
-do shell script "./remote-xpc-tunnel --list_remote_devices true --log_destination_path /Users/juan/Library/Apptim/remote-xpc-tunnel" with prompt "Trust Apptim iOS connection?" with administrator privileges
-```
-
-and then do:
+(⚠️ These permissions are not enough to create a tunnel)
 
 ```bash
-osascript ./remote-xpc-tunnel.scpt
+./remote-xpc-tunnel --list-remote-devices true
 ```
-
-### 🚀 API
-
-```bash
---udid # device serial
---log_destination_path # location to write output files
---list_remote_devices # just obtain connected devices, do not create tunnels
-```
-
-### 🏃🏽‍♂️ Run
 
 Create tunnel
 
+1- Create a `remote-xpc-tunnel.scpt` file inside `dist/remote-xpc-tunnel` with the following content:
+
 ```bash
-sudo ./remote-xpc-tunnel --udid ABCDEF12-34567890ABCDEF12 --log_destination_path /Users/juan/Library/Apptim/remote-xpc-tunnel
+do shell script "./remote-xpc-tunnel --udid 00008020-001E710414A1002E --log-destination-path /Users/juan/Library/Apptim/remote-xpc-tunnel/rsd.json" with prompt "Apptim needs permissions to Create iOS connection tunnel" with administrator privileges
 ```
 
-List remote devices
+2- Run applescript
 
 ```bash
-sudo ./remote-xpc-tunnel --list_remote_devices true --log_destination_path /Users/juan/Library/Apptim/remote-xpc-tunnel
+osascript ./remote-xpc-tunnel.scpt
 ```

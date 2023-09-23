@@ -2,6 +2,8 @@ import asyncio
 import json
 import logging
 import argparse
+import os
+
 from cryptography.hazmat.primitives.asymmetric import rsa
 from pymobiledevice3.cli.cli_common import prompt_device_list
 from pymobiledevice3.cli.remote import get_device_list
@@ -11,8 +13,8 @@ from pymobiledevice3.remote.remote_service_discovery import RemoteServiceDiscove
 
 parser = argparse.ArgumentParser(description='RemoteXPC Tunnel')
 parser.add_argument("--udid", type=str)
-parser.add_argument("--log_destination_path", type=str)
-parser.add_argument("--list_remote_devices", type=bool)
+parser.add_argument("--log-destination-path", type=str)
+parser.add_argument("--list-remote-devices", type=bool)
 remote_xpc_log = "Remote XPC Tunnel: "
 
 
@@ -23,7 +25,7 @@ def get_remote_devices():
     return devices
 
 
-def start_remote_xpc_tunnel(udid=None, log_destination=None):
+def create_tunnel(udid=None, log_destination=None):
     devices = get_remote_devices()
     if len(devices) == 1:
         # only one device found
@@ -85,15 +87,16 @@ def main():
         print(connected_devices)
         return
 
-    if not log_destination_path:
-        logging.info(f"{remote_xpc_log} No log destination path found!, use --log_destination_path arg")
+    if not list_remote_devices and not log_destination_path:
+        logging.info(f"{remote_xpc_log} No log destination path found!, use --log-destination-path arg")
         return
 
     if not device_udid:
         logging.info(f"{remote_xpc_log} Tunnel couldn't be created, use --udid arg to specify a device")
+        return
     else:
         logging.info(f"{remote_xpc_log} Creating tunnel with device: {device_udid}...")
-        start_remote_xpc_tunnel(udid=device_udid, log_destination=log_destination_path)
+        create_tunnel(udid=device_udid, log_destination=log_destination_path)
 
 
 if __name__ == "__main__":
