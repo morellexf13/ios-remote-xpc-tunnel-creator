@@ -43,7 +43,7 @@ pip3 install -r requirements.txt
 
 1- Create binary with ```pyinstaller main.py --name remote-xpc-tunnel```
 
-### 🚀 API
+### 🚀 Usable args
 
 ```bash
 --udid # device serial
@@ -73,7 +73,7 @@ Create tunnel
 1- Create a `remote-xpc-tunnel.scpt` file inside `dist/remote-xpc-tunnel` with the following content:
 
 ```bash
-do shell script "./remote-xpc-tunnel --udid 00008020-001E710414A1002E --log-destination-path /Users/juan/Library/Apptim/remote-xpc-tunnel/rsd.json" with prompt "Apptim needs permissions to Create iOS connection tunnel" with administrator privileges
+do shell script "./remote-xpc-tunnel --udid YOUR DEVICE SERIAL ID --log-destination-path YOUR PATH/rsd.json" with prompt "This script is about to create an iOS connection tunnel" with administrator privileges
 ```
 
 2- Run applescript
