@@ -10,6 +10,7 @@ from pymobiledevice3.cli.remote import get_device_list
 from pymobiledevice3.exceptions import NoDeviceConnectedError
 from pymobiledevice3.remote.core_device_tunnel_service import create_core_device_tunnel_service
 from pymobiledevice3.remote.remote_service_discovery import RemoteServiceDiscoveryService
+from pymobiledevice3.remote.utils import resume_remoted_if_required, stop_remoted, stop_remoted_if_required
 
 parser = argparse.ArgumentParser(description='RemoteXPC Tunnel')
 parser.add_argument("--udid", type=str)
@@ -50,8 +51,10 @@ def create_tunnel(udid=None, log_destination=None):
 
 async def start_quic_tunnel(service_provider: RemoteServiceDiscoveryService, log_destination=None) -> None:
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    stop_remoted_if_required()
     with create_core_device_tunnel_service(service_provider, autopair=True) as service:
         async with service.start_quic_tunnel(private_key, secrets_log_file=None) as tunnel_result:
+            resume_remoted_if_required()
             logging.info(f"{remote_xpc_log} --rsd {tunnel_result.address} {tunnel_result.port}")
             if log_destination:
                 with open(log_destination, "w") as log_file:
