@@ -81,3 +81,5 @@ do shell script "./remote-xpc-tunnel --udid YOUR DEVICE SERIAL ID --log-destinat
 ```bash
 osascript ./remote-xpc-tunnel.scpt
 ```
+
+Credits to @doronz88
