@@ -10,7 +10,7 @@
   </h1>
   <sup>
     <br />
-     An iOS >=17 RemoteXPC tunnel creator</em>
+     An iOS >=17 RemoteXPC tunnel creator that allows you to access developer services</em>
     <br />
     <br />
 
