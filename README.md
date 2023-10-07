@@ -4,7 +4,7 @@
     🚇
     <br />
     <br />
-    iOS RemoteXPC Tunnel Creator
+    iOS RemoteXPC Tunnel
     <br />
     <br />
   </h1>
@@ -46,9 +46,11 @@ pip3 install -r requirements.txt
 ### 🚀 Usable args
 
 ```bash
---udid # device serial
---log-destination-path # location to write output files
---list-remote-devices # just obtain connected devices, do not create tunnels
+--list-remote-devices # list remote devices
+--device-udid # device UDID
+--tunnels # number of tunnels to create
+--close-tunnels-signal-file # path of file used to force closing tunnels
+--rsd-destination-path # path of remote addresses json
 ```
 
 ### 🏃🏽‍♂️ Run
@@ -65,7 +67,7 @@ sudo chmod u+s ./remote-xpc-tunnel
 (⚠️ These permissions are not enough to create a tunnel)
 
 ```bash
-./remote-xpc-tunnel --list-remote-devices true
+./remote-xpc-tunnel --list-remote-devices
 ```
 
 Create tunnel
@@ -73,7 +75,7 @@ Create tunnel
 1- Create a `remote-xpc-tunnel.scpt` file inside `dist/remote-xpc-tunnel` with the following content:
 
 ```bash
-do shell script "./remote-xpc-tunnel --udid YOUR DEVICE SERIAL ID --log-destination-path YOUR PATH/rsd.json" with prompt "This script is about to create an iOS connection tunnel" with administrator privileges
+do shell script "./remote-xpc-tunnel --device-udid YOUR DEVICE SERIAL ID --tunnels 6 --close-tunnels-signal-file YOUR PATH/close_addresses.signal --rsd-destination-path YOUR PATH/rsd_addresses.json" with prompt "This script is about to create an iOS connection tunnel" with administrator privileges
 ```
 
 2- Run applescript
