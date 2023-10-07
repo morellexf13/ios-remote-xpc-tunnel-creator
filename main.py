@@ -13,10 +13,11 @@ from pymobiledevice3.remote.remote_service_discovery import RemoteServiceDiscove
 from pymobiledevice3.remote.utils import resume_remoted_if_required, stop_remoted_if_required
 
 parser = argparse.ArgumentParser(description='RemoteXPC Tunnel')
-parser.add_argument("--udid", type=str)
-parser.add_argument("--rsd-destination-path", type=str)
-parser.add_argument("--list-remote-devices", type=bool)
-parser.add_argument("--tunnels", type=int)
+parser.add_argument("--list-remote-devices", help="List remote devices", action="store_true")
+parser.add_argument("--device-udid", help="Device UDID")
+parser.add_argument("--tunnels", type=int, help="Number of tunnels to create")
+parser.add_argument("--close-tunnels-signal-file", help="Path of file used to force closing tunnels")
+parser.add_argument("--rsd-destination-path", help="Path of remote addresses json")
 remote_xpc_log = "Remote XPC Tunnel: "
 
 
@@ -30,8 +31,11 @@ def get_remote_devices():
 class RemoteXPC:
     def __init__(self, devices):
         self.devices = devices
+        self.tunnels_to_create = 1
+        self.close_tunnels_signal_file = None
+        self.rsd_destination = None
 
-    def create_tunnels(self, device_udid=None, rsd_destination=None, quantity=1):
+    def create_tunnels(self, device_udid=None):
         if len(self.devices) == 1:
             # only one device found
             rsd = self.devices[0]
@@ -51,23 +55,26 @@ class RemoteXPC:
         if device_udid is not None and rsd.udid != device_udid:
             raise NoDeviceConnectedError()
 
-        asyncio.run(self.start_quic_tunnel_concurrently(rsd=rsd, rsd_destination=rsd_destination, quantity=quantity), debug=True)
+        asyncio.run(self.start_quic_tunnel_concurrently(rsd), debug=True)
 
-    async def start_quic_tunnel_concurrently(self, rsd, rsd_destination, quantity):
-        tasks = [self.start_quic_tunnel(rsd, rsd_destination) for _ in range(quantity)]
+    async def start_quic_tunnel_concurrently(self, rsd):
+        tasks = [self.start_quic_tunnel(rsd) for _ in range(self.tunnels_to_create)]
         await asyncio.gather(*tasks)
+        if self.close_tunnels_signal_file:
+            logging.info(f"{remote_xpc_log} removing close tunnels signal file...")
+            os.remove(self.close_tunnels_signal_file)
 
-    async def start_quic_tunnel(self, service_provider: RemoteServiceDiscoveryService, rsd_destination=None) -> None:
+    async def start_quic_tunnel(self, service_provider: RemoteServiceDiscoveryService) -> None:
         private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         stop_remoted_if_required()
         with create_core_device_tunnel_service(service_provider, autopair=True) as service:
             async with service.start_quic_tunnel(private_key, secrets_log_file=None) as tunnel_result:
                 resume_remoted_if_required()
                 logging.info(f"{remote_xpc_log} --rsd {tunnel_result.address} {tunnel_result.port}")
-                if rsd_destination:
+                if self.rsd_destination:
 
-                    if os.path.exists(rsd_destination):
-                        with open(rsd_destination, "r") as json_file:
+                    if os.path.exists(self.rsd_destination):
+                        with open(self.rsd_destination, "r") as json_file:
                             existing_data = json.load(json_file)
                     else:
                         existing_data = []
@@ -80,12 +87,17 @@ class RemoteXPC:
 
                     existing_data.extend(new_data)
 
-                    with open(rsd_destination, "w") as json_file:
+                    with open(self.rsd_destination, "w") as json_file:
                         json.dump(existing_data, json_file, indent=4)
 
-                while True:
-                    # wait user input while the asyncio tasks execute
-                    await asyncio.sleep(.5)
+                if self.close_tunnels_signal_file:
+                    while not os.path.exists(self.close_tunnels_signal_file):
+                        # wait signal file existence while the asyncio tasks execute
+                        await asyncio.sleep(.5)
+                else:
+                    while True:
+                        # wait user input while the asyncio tasks execute
+                        await asyncio.sleep(.5)
 
 
 def main():
@@ -94,22 +106,16 @@ def main():
         return
 
     logging.info(f"{remote_xpc_log} Running with root privileges")
-
-    connected_devices = []
     args = parser.parse_args()
-    device_udid = args.udid
-    rsd_destination_path = args.rsd_destination_path
-    list_remote_devices = args.list_remote_devices
-    tunnels = args.tunnels
 
-    if not device_udid and not rsd_destination_path and not list_remote_devices:
+    if not args:
         logging.info(f"{remote_xpc_log} No args were specified!")
         return
 
     devices = get_remote_devices()
     remote_xpc = RemoteXPC(devices)
-
-    if list_remote_devices:
+    connected_devices = []
+    if args.list_remote_devices:
         for device in remote_xpc.devices:
             connected_devices.append(device.udid)
 
@@ -117,16 +123,26 @@ def main():
         print(connected_devices)
         return
 
-    if device_udid and not rsd_destination_path:
-        logging.info(f"{remote_xpc_log} No rsd destination path found!, use --rsd-destination-path arg")
+    if not args.device_udid:
+        logging.info(f"{remote_xpc_log} No Device UDID found, use --device-udid arg")
         return
 
-    if not device_udid:
-        logging.info(f"{remote_xpc_log} Tunnel couldn't be created, use --udid arg to specify a device")
-        return
+    if args.tunnels:
+        remote_xpc.tunnels_to_create = args.tunnels
     else:
-        logging.info(f"{remote_xpc_log} Creating tunnel/s with device: {device_udid}...")
-        remote_xpc.create_tunnels(device_udid=device_udid, rsd_destination=rsd_destination_path, quantity=tunnels)
+        logging.info(f"{remote_xpc_log} No tunnels were specified, default value will be used!")
+
+    if args.close_tunnels_signal_file:
+        remote_xpc.close_tunnels_signal_file = args.close_tunnels_signal_file
+    else:
+        logging.info(f"{remote_xpc_log} No close tunnels signal file specified, default value will be used!")
+
+    if args.rsd_destination_path:
+        remote_xpc.rsd_destination = args.rsd_destination_path
+    else:
+        logging.info(f"{remote_xpc_log} No rsd destination path specified, addresses will be just printed!")
+
+    remote_xpc.create_tunnels()
 
 
 if __name__ == "__main__":
