@@ -10,7 +10,7 @@
   </h1>
   <sup>
     <br />
-     An iOS >=17 RemoteXPC tunnel creator that allows you to access developer services</em>
+     Create your own binary to access iOS 17+ developer services by creating RemoteXPC tunnels</em>
     <br />
     <br />
 
@@ -41,7 +41,7 @@ pip3 install -r requirements.txt
 
 ### 🦺 Build
 
-1- Create binary with ```pyinstaller main.py --name remote-xpc-tunnel```
+1- Create binary with ```cxfreeze -c remote-xpc-tunnel```
 
 ### 🚀 Usable args
 
@@ -60,7 +60,7 @@ List remote devices
 Give root permissions (needed) [pymobiledevice3 issues#562](https://github.com/doronz88/pymobiledevice3/issues/562#issuecomment-1724226316)
 
 ```bash
-cd dist/remote-xpc-tunnel
+cd build/exe.macosx-10.9-universal2-3.11/
 sudo chown root ./remote-xpc-tunnel
 sudo chmod u+s ./remote-xpc-tunnel
 ```
@@ -72,7 +72,7 @@ sudo chmod u+s ./remote-xpc-tunnel
 
 Create tunnel
 
-1- Create a `remote-xpc-tunnel.scpt` file inside `dist/remote-xpc-tunnel` with the following content:
+1- Create a `remote-xpc-tunnel.scpt` file inside `build/exe.macosx-10.9-universal2-3.11/` with the following content:
 
 ```bash
 do shell script "./remote-xpc-tunnel --device-udid YOUR DEVICE SERIAL ID --tunnels 6 --close-tunnels-signal-file YOUR PATH/close_addresses.signal --rsd-destination-path YOUR PATH/rsd_addresses.json" with prompt "This script is about to create an iOS connection tunnel" with administrator privileges
